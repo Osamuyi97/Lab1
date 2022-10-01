@@ -1,0 +1,46 @@
+import board
+import time
+import busio
+import neopixel
+import usb_hid
+from adafruit_hid.keyboard import Keyboard
+from adafruit_hid.keycode import Keycode
+from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
+import adafruit_apds9960.apds9960
+
+i2c = board.STEMMA_I2C()
+
+
+sensor = adafruit_apds9960.apds9960.APDS9960(i2c)
+sensor.enable_color = True
+sensor.color_integration_time = 20
+
+
+# setup keyboard
+kbd = Keyboard(usb_hid.devices)
+layout = KeyboardLayoutUS(kbd)
+
+pixels = neopixel.NeoPixel(board.NEOPIXEL, 1)
+while True:
+    if sensor.color_data_ready:
+        r, g, b, c = sensor.color_data
+        if c < 500:
+
+            pixels.fill((128, 0, 128))
+            kbd.press(Keycode.BACKSPACE)
+            kbd.release(Keycode.BACKSPACE)
+            print("Red: {0}, Green: {1}, Blue: {2}, Clear: {3}".format(r, g, b, c))
+            print("c<500")
+
+        elif c > 500 and c < 800:
+
+            pixels.fill((255, 0, 0))
+            print("Red: {0}, Green: {1}, Blue: {2}, Clear: {3}".format(r, g, b, c))
+            print("c 500<800")
+        elif c > 800:
+
+            pixels.fill((255, 255, 255))
+            kbd.press(Keycode.O)
+            kbd.release(Keycode.O)
+            print("Red: {0}, Green: {1}, Blue: {2}, Clear: {3}".format(r, g, b, c))
+            print("c > 800")
